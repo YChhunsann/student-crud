@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/students';
+const API_URL = '/students';  // Use a relative URL instead of hardcoded localhost
 
 $(document).ready(function () {
   // Fetch and display students
