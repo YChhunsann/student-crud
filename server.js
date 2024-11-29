@@ -7,7 +7,9 @@ const app = express();
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+  origin: ['https://your-heroku-app-name.herokuapp.com'],
+}));
 app.use(express.static('public'));
 
 // Path to the JSON file
