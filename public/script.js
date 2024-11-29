@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:3000/students';
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000/students' 
+  : 'https://student-crud-8c563f877250.herokuapp.com/';
+
 
 $(document).ready(function () {
   // Fetch and display students
