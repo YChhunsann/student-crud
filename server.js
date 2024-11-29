@@ -13,6 +13,14 @@ app.use(express.static('public'));
 // Path to the JSON file
 const tmpFilePath = path.join(__dirname, 'tmp', 'students.json');
 
+// Ensure directory exists
+const ensureDirExists = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+};
+
+// Read data from the file
 function readData() {
   if (!fs.existsSync(tmpFilePath)) {
     return [];
@@ -21,17 +29,16 @@ function readData() {
   return JSON.parse(data);
 }
 
+// Write data to the file
 function writeData(data) {
-  const tmpDir = path.dirname(tmpFilePath);
-  if (!fs.existsSync(tmpDir)) {
-    fs.mkdirSync(tmpDir);
-  }
+  ensureDirExists(path.dirname(tmpFilePath));
   fs.writeFileSync(tmpFilePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 // GET: Fetch all students
 app.get('/students', (req, res) => {
   const students = readData();
+  console.log('Fetched students:', students);  // Debugging log
   res.json(students);
 });
 
@@ -46,15 +53,16 @@ app.post('/students', (req, res) => {
 
   const students = readData();
   const newStudent = {
-    id: students.length > 0 ? students[students.length - 1].id + 1 : 1,
+    id: students.length > 0 ? students[students.length - 1].id + 1 : 1,  // Auto incrementing ID
     name,
     email,
   };
+
   students.push(newStudent);
   writeData(students);
+  console.log('New student added:', newStudent);  // Debugging log
   res.status(201).json(newStudent);
 });
-
 
 // PUT: Update a student by ID
 app.put('/students/:id', (req, res) => {
@@ -95,4 +103,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-

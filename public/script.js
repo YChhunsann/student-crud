@@ -58,7 +58,6 @@ $(document).ready(function () {
     });
   });
 
-
   // Delete a student
   $(document).on('click', '.deleteBtn', function () {
     const id = $(this).data('id');
@@ -79,9 +78,11 @@ $(document).ready(function () {
     const name = row.find('td:eq(1)').text();
     const email = row.find('td:eq(2)').text();
 
+    // Fill the form with the student's data
     $('#studentName').val(name);
     $('#studentEmail').val(email);
 
+    // Change form submit behavior to update the student
     $('#studentForm').off('submit').on('submit', function (e) {
       e.preventDefault();
 
@@ -95,22 +96,46 @@ $(document).ready(function () {
         data: JSON.stringify({ name: updatedName, email: updatedEmail }),
         success: function () {
           fetchStudents();
-          $('#studentForm').off('submit').on('submit', function (e) {
-            e.preventDefault();
-            const name = $('#studentName').val();
-            const email = $('#studentEmail').val();
-
-            $.post(API_URL, { name, email }, function () {
-              fetchStudents();
-              $('#studentName').val('');
-              $('#studentEmail').val('');
-            });
-          });
-
-          $('#studentName').val('');
-          $('#studentEmail').val('');
-        }
+          resetForm(); // Reset the form after editing
+        },
+        error: function (err) {
+          console.error('Error updating student:', err);
+          alert('Failed to update student.');
+        },
       });
     });
   });
+
+  // Reset the form back to the original state (for adding new students)
+  function resetForm() {
+    $('#studentForm').off('submit').on('submit', function (e) {
+      e.preventDefault();
+
+      const name = $('#studentName').val();
+      const email = $('#studentEmail').val();
+
+      // Validate inputs
+      if (!name || !email) {
+        alert('Please fill in both name and email.');
+        return;
+      }
+
+      // Send data to the server
+      $.ajax({
+        url: API_URL,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ name, email }),
+        success: function () {
+          fetchStudents(); // Reload the table
+          $('#studentName').val(''); // Clear the form
+          $('#studentEmail').val('');
+        },
+        error: function (err) {
+          console.error('Error adding student:', err);
+          alert('Failed to add student.');
+        },
+      });
+    });
+  }
 });
