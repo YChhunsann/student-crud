@@ -1,7 +1,4 @@
-const API_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000/students' 
-  : 'https://student-crud-8c563f877250.herokuapp.com/';
-
+const API_URL = 'http://localhost:3000/students';
 
 $(document).ready(function () {
   // Fetch and display students
@@ -31,33 +28,32 @@ $(document).ready(function () {
 
   // Add a new student
   $('#studentForm').on('submit', function (e) {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
 
-    // Get form input values
-    const name = $('#studentName').val();
-    const email = $('#studentEmail').val();
+    const name = $('#studentName').val().trim(); // Get student name and remove extra spaces
+    const email = $('#studentEmail').val().trim(); // Get student email and remove extra spaces
 
-    // Validate inputs
-    if (!name || !email) {
-      alert('Please fill in both name and email.');
+    if (name === "" || email === "") {
+      alert("Please fill in both name and email.");
       return;
     }
 
-    // Send data to the server
     $.ajax({
       url: API_URL,
       type: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ name, email }),
-      success: function () {
-        fetchStudents(); // Reload the table
-        $('#studentName').val(''); // Clear the form
+      data: JSON.stringify({ name: name, email: email }),  // Send name and email in correct JSON format
+      success: function (newStudent) {
+        // After successful POST, fetch students to reload the table
+        fetchStudents();
+        
+        // Clear the form fields after submission
+        $('#studentName').val('');
         $('#studentEmail').val('');
       },
       error: function (err) {
         console.error('Error adding student:', err);
-        alert('Failed to add student.');
-      },
+      }
     });
   });
 
@@ -69,7 +65,10 @@ $(document).ready(function () {
       url: `${API_URL}/${id}`,
       type: 'DELETE',
       success: function () {
-        fetchStudents();
+        fetchStudents(); // Re-fetch students after deletion
+      },
+      error: function (err) {
+        console.error('Error deleting student:', err);
       }
     });
   });
@@ -81,16 +80,20 @@ $(document).ready(function () {
     const name = row.find('td:eq(1)').text();
     const email = row.find('td:eq(2)').text();
 
-    // Fill the form with the student's data
     $('#studentName').val(name);
     $('#studentEmail').val(email);
 
-    // Change form submit behavior to update the student
+    // Change the submit handler to update the student instead of adding a new one
     $('#studentForm').off('submit').on('submit', function (e) {
       e.preventDefault();
 
-      const updatedName = $('#studentName').val();
-      const updatedEmail = $('#studentEmail').val();
+      const updatedName = $('#studentName').val().trim();
+      const updatedEmail = $('#studentEmail').val().trim();
+
+      if (updatedName === "" || updatedEmail === "") {
+        alert("Please fill in both name and email.");
+        return;
+      }
 
       $.ajax({
         url: `${API_URL}/${id}`,
@@ -98,46 +101,52 @@ $(document).ready(function () {
         contentType: 'application/json',
         data: JSON.stringify({ name: updatedName, email: updatedEmail }),
         success: function () {
+          // Re-fetch students after update
           fetchStudents();
-          resetForm(); // Reset the form after editing
+
+          // Reset the form back to "add new student" state
+          resetFormForAdd();
+
+          // Clear the form after updating
+          $('#studentName').val('');
+          $('#studentEmail').val('');
         },
         error: function (err) {
           console.error('Error updating student:', err);
-          alert('Failed to update student.');
-        },
+        }
       });
     });
   });
 
-  // Reset the form back to the original state (for adding new students)
-  function resetForm() {
+  // Reset the form for adding a new student after editing
+  function resetFormForAdd() {
+    // Reset the form event listener to add a new student
     $('#studentForm').off('submit').on('submit', function (e) {
       e.preventDefault();
+      const name = $('#studentName').val().trim();
+      const email = $('#studentEmail').val().trim();
 
-      const name = $('#studentName').val();
-      const email = $('#studentEmail').val();
-
-      // Validate inputs
-      if (!name || !email) {
-        alert('Please fill in both name and email.');
+      if (name === "" || email === "") {
+        alert("Please fill in both name and email.");
         return;
       }
 
-      // Send data to the server
       $.ajax({
         url: API_URL,
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ name, email }),
+        data: JSON.stringify({ name: name, email: email }),
         success: function () {
-          fetchStudents(); // Reload the table
-          $('#studentName').val(''); // Clear the form
+          // After successful POST, fetch students to reload the table
+          fetchStudents();
+          
+          // Clear the form fields after submission
+          $('#studentName').val('');
           $('#studentEmail').val('');
         },
         error: function (err) {
           console.error('Error adding student:', err);
-          alert('Failed to add student.');
-        },
+        }
       });
     });
   }
