@@ -11,17 +11,22 @@ app.use(cors());
 app.use(express.static('public'));
 
 // Path to the JSON file
-const filePath = path.join(__dirname, 'students.json');
+const tmpFilePath = path.join(__dirname, 'tmp', 'students.json');
 
-// Helper function to read the JSON file
 function readData() {
-  const data = fs.readFileSync(filePath, 'utf8');
+  if (!fs.existsSync(tmpFilePath)) {
+    return [];
+  }
+  const data = fs.readFileSync(tmpFilePath, 'utf8');
   return JSON.parse(data);
 }
 
-// Helper function to write to the JSON file
 function writeData(data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  const tmpDir = path.dirname(tmpFilePath);
+  if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir);
+  }
+  fs.writeFileSync(tmpFilePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 // GET: Fetch all students
